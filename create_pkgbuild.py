@@ -243,7 +243,7 @@ class Package(PackageBase):
 
     pkgname='ros-%(distro)s-%(arch_package_name)s'
     pkgver='%(package_version)s'
-    arch=('any')
+    arch=('i686' 'x86_64' 'aarch64' 'armv7h' 'armv6h')
     pkgrel=%(package_release)s
     license=('%(license)s')
 
@@ -265,18 +265,11 @@ class Package(PackageBase):
         [ -d ${srcdir}/build ] || mkdir ${srcdir}/build
         cd ${srcdir}/build
 
-        # Fix Python2/Python3 conflicts
-        /usr/share/ros-build-tools/fix-python-scripts.sh -v %(python_version_major)s ${srcdir}/${_dir}
-
         # Build project
         cmake ${srcdir}/${_dir} \\
-                -DCMAKE_BUILD_TYPE=Release \\
                 -DCATKIN_BUILD_BINARY_PACKAGE=%(binary)s \\
                 -DCMAKE_INSTALL_PREFIX=/opt/ros/%(distro)s \\
                 -DPYTHON_EXECUTABLE=%(python_executable)s \\
-                -DPYTHON_INCLUDE_DIR=%(python_include_dir)s \\
-                -DPYTHON_LIBRARY=%(python_library)s \\
-                -DPYTHON_BASENAME=%(python_basename)s \\
                 -DSETUPTOOLS_DEB_LAYOUT=OFF
     make
     }
