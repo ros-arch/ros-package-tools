@@ -237,7 +237,7 @@ class PackageBase(object):
 
 class Package(PackageBase):
     BUILD_TEMPLATE = """# Script generated with create_pkgbuild.py
-    # For more information: https://github.com/ros-melodic-arch/ros-build-tools-py3
+    # For more information: https://github.com/ros-arch/ros-package-tools
     pkgdesc="ROS - %(description)s"
     url='%(site_url)s'
 
@@ -354,7 +354,7 @@ class Package(PackageBase):
 
 class MetaPackage(PackageBase):
     BUILD_TEMPLATE = """# Script generated with create_pkgbuild.py
-  # For more information: https://github.com/ros-melodic-arch/ros-build-tools-py3
+  # For more information: https://github.com/ros-arch/ros-package-tools
   pkgdesc="ROS - %(description)s"
   url='%(site_url)s'
 
@@ -667,7 +667,7 @@ def generate_pkgbuild(distro, package, directory, force=False,
 def main():
     parser = ArgumentParser(prog='create_pkgbuild', add_help=True)
     parser.add_argument('package', type=str, nargs='+')
-    parser.add_argument('--distro', default='melodic', metavar='distro',
+    parser.add_argument('--distro', default='noetic', metavar='distro',
                         help='Select the ROS distro to use.')
     parser.add_argument('--list-packages', dest='list_packages', action='store_true',
                         default=False, help='Lists all available packages.')
@@ -707,13 +707,15 @@ def main():
     args = parser.parse_args()
 
     # Dictionary containing valid Python versions
-    valid_python_versions = {"kinetic": ["2.7", "3.7"],
-                             "melodic": ["2.7", "3.7"]}
+    valid_python_versions = {"kinetic": ["2.7", "3.8"],
+                             "melodic": ["2.7", "3.8"],
+                             "noetic": ["2.7", "3.8"]}
 
     # Default Python version that will be used
     # Even though the official python version for melodic is stil 2.7, the official one for Arch is 3.
     default_python_version = {"kinetic": "2.7",
-                              "melodic": "3.7"}
+                              "noetic": "3.8",
+                              "melodic": "3.8"}
 
     python_version = default_python_version[args.distro]
     if args.python_version != "":
