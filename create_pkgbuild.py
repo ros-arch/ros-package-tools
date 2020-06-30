@@ -237,48 +237,59 @@ class PackageBase(object):
 
 class Package(PackageBase):
     BUILD_TEMPLATE = """# Script generated with create_pkgbuild.py
-    # For more information: https://github.com/ros-arch/ros-package-tools
-    pkgdesc="ROS - %(description)s"
-    url='%(site_url)s'
+# For more information: https://github.com/ros-arch/ros-package-tools
+pkgdesc="ROS - %(description)s"
+url='%(site_url)s'
 
-    pkgname='ros-%(distro)s-%(arch_package_name)s'
-    pkgver='%(package_version)s'
-    arch=('i686' 'x86_64' 'aarch64' 'armv7h' 'armv6h')
-    pkgrel=%(package_release)s
-    license=('%(license)s')
+pkgname='ros-%(distro)s-%(arch_package_name)s'
+pkgver='%(package_version)s'
+arch=('i686' 'x86_64' 'aarch64' 'armv7h' 'armv6h')
+pkgrel=%(package_release)s
+license=('%(license)s')
 
-    ros_makedepends=(%(ros_build_dependencies)s)
-    makedepends=('cmake' 'ros-build-tools'
+ros_makedepends=(
+    %(ros_build_dependencies)s
+)
+
+makedepends=(
+    cmake
+    ros-build-tools
     ${ros_makedepends[@]}
-    %(other_build_dependencies)s)
+    %(other_build_dependencies)s
+)
 
-    ros_depends=(%(ros_run_dependencies)s)
-    depends=(${ros_depends[@]}
-    %(other_run_dependencies)s)
+ros_depends=(
+    %(ros_run_dependencies)s
+)
 
-    build() {
-        # Use ROS environment variables
-        source /usr/share/ros-build-tools/clear-ros-env.sh
-        [ -f /opt/ros/%(distro)s/setup.bash ] && source /opt/ros/%(distro)s/setup.bash
+depends=(
+    ${ros_depends[@]}
+    %(other_run_dependencies)s
+)
 
-        # Create build directory
-        [ -d ${srcdir}/build ] || mkdir ${srcdir}/build
-        cd ${srcdir}/build
+build() {
+    # Use ROS environment variables
+    source /usr/share/ros-build-tools/clear-ros-env.sh
+    [ -f /opt/ros/%(distro)s/setup.bash ] && source /opt/ros/%(distro)s/setup.bash
 
-        # Build project
-        cmake ${srcdir}/${_dir} \\
-                -DCATKIN_BUILD_BINARY_PACKAGE=%(binary)s \\
-                -DCMAKE_INSTALL_PREFIX=/opt/ros/%(distro)s \\
-                -DPYTHON_EXECUTABLE=%(python_executable)s \\
-                -DSETUPTOOLS_DEB_LAYOUT=OFF
+    # Create build directory
+    [ -d ${srcdir}/build ] || mkdir ${srcdir}/build
+    cd ${srcdir}/build
+
+    # Build project
+    cmake ${srcdir}/${_dir} \\
+            -DCATKIN_BUILD_BINARY_PACKAGE=%(binary)s \\
+            -DCMAKE_INSTALL_PREFIX=/opt/ros/%(distro)s \\
+            -DPYTHON_EXECUTABLE=%(python_executable)s \\
+            -DSETUPTOOLS_DEB_LAYOUT=OFF
     make
-    }
+}
 
-    package() {
+package() {
     cd "${srcdir}/build"
     make DESTDIR="${pkgdir}/" install
-    }
-    """
+}
+"""
 
     def generate(self, python_version, exclude_dependencies=[], rosdep_urls=[],
                  output_dir=None):
@@ -297,6 +308,8 @@ class Package(PackageBase):
                          if dependency not in exclude_dependencies]
 
         python_version_major = python_version.split('.')[0]
+        if python_version_major == '3':
+            python_version_major = ''
         python_version_full = python_version
         # Python 3 include directory is /usr/include/python3.4m... Because why not?
         if python_version_major == "3":
@@ -327,10 +340,10 @@ class Package(PackageBase):
             'tarball_sha': self._download_tarball(self.tarball_url, output_dir,
                                                   "ros-%s-%s" % (self.distro.name,
                                                                  self._rosify_package_name(self.name))),
-            'ros_build_dependencies': '\n  '.join(ros_build_dep),
-            'ros_run_dependencies': '\n  '.join(ros_run_dep),
-            'other_build_dependencies': '\n  '.join(other_build_dep),
-            'other_run_dependencies': '\n  '.join(other_run_dep),
+            'ros_build_dependencies': '\n    '.join(ros_build_dep),
+            'ros_run_dependencies': '\n    '.join(ros_run_dep),
+            'other_build_dependencies': '\n    '.join(other_build_dep),
+            'other_run_dependencies': '\n    '.join(other_run_dep),
             'binary': "OFF" if self.name == "catkin" else "ON",
             'python_version_major': python_version_major,
             'python_executable': '/usr/bin/python%s' % python_version_major,
@@ -342,6 +355,8 @@ class Package(PackageBase):
         # Post-processing:
         # Remove useless carriage return
         pkgbuild = re.sub('\\n  \)', ')', pkgbuild)
+        # Change tabs to whitespace
+        pkgbuild = re.sub('\t', '    ', pkgbuild)
         return pkgbuild
 
 
