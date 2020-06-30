@@ -365,7 +365,7 @@ class MetaPackage(PackageBase):
   ros_depends=(%(ros_run_dependencies)s)
   depends=(${ros_depends[@]}
   %(other_run_dependencies)s)
- 
+
   source=()
   md5sums=()
   """
@@ -707,8 +707,8 @@ def main():
     # Default Python version that will be used
     # Even though the official python version for melodic is stil 2.7, the official one for Arch is 3.
     default_python_version = {"kinetic": "2.7",
-                              "noetic": "3.8",
-                              "melodic": "3.8"}
+                              "melodic": "3.8",
+                              "noetic": "3.8"}
 
     python_version = default_python_version[args.distro]
     if args.python_version != "":
